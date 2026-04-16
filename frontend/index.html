@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>BuyBee🐝</title>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #fdf2f8, #e0f2fe);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Chat Box */
+.chat-container {
+  width: 380px;
+  height: 600px;
+  background: #ffffffcc;
+  backdrop-filter: blur(12px);
+  border-radius: 25px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Header */
+.chat-header {
+  background: linear-gradient(90deg, #f9a8d4, #a5b4fc);
+  padding: 18px;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.chat-header span {
+  font-size: 13px;
+  opacity: 0.9;
+  display: block;
+}
+
+/* Messages */
+.chat-messages {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Message bubbles */
+.message {
+  max-width: 75%;
+  padding: 12px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.message.user {
+  background: #c7d2fe;
+  align-self: flex-end;
+  border-bottom-right-radius: 5px;
+}
+
+.message.bot {
+  background: #fbcfe8;
+  align-self: flex-start;
+  border-bottom-left-radius: 5px;
+}
+
+/* Input area */
+.chat-input {
+  display: flex;
+  padding: 12px;
+  background: #f8fafc;
+  border-top: 1px solid #eee;
+  gap: 8px;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 12px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  outline: none;
+  background: #fff;
+}
+
+.chat-input button {
+  background: #a5b4fc;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.chat-input button:hover {
+  background: #818cf8;
+}
+</style>
+</head>
+
+<body>
+
+<div class="chat-container">
+  <div class="chat-header">
+    BuyBee🐝
+    
+  </div>
+
+  <div class="chat-messages" id="messages">
+    <div class="message bot">
+      🌸 Heya! I'm BuyBee, your personal shopping bestie. What are we shopping for today?
+    </div>
+  </div>
+
+  <div class="chat-input">
+    <input id="userInput" placeholder="Ask me anything 💕" />
+    <button onclick="sendMessage()">➤</button>
+  </div>
+</div>
+
+<script>
+const messagesDiv = document.getElementById("messages");
+const userInput = document.getElementById("userInput");
+
+function appendMessage(text, sender) {
+  const msg = document.createElement("div");
+  msg.classList.add("message", sender);
+  msg.innerHTML = text.replace(/\n/g, "<br>");
+  messagesDiv.appendChild(msg);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+async function sendMessage() {
+  const message = userInput.value.trim();
+  if (!message) return;
+
+  appendMessage(message, "user");
+  userInput.value = "";
+
+  const typing = document.createElement("div");
+  typing.classList.add("message", "bot");
+  typing.innerText = "typing... 💭";
+  messagesDiv.appendChild(typing);
+
+  try {
+    const res = await fetch("http://127.0.0.1:3000/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message })
+    });
+
+    const data = await res.json();
+
+    typing.remove();
+    appendMessage(data.reply, "bot");
+
+  } catch (err) {
+    typing.remove();
+    appendMessage("Oopsie... server not responding 💔", "bot");
+  }
+}
+
+userInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") sendMessage();
+});
+</script>
+
+</body>
+</html>
